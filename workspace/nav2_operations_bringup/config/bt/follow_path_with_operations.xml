@@ -1,0 +1,21 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+
+    <ReactiveSequence>
+
+      <OperationUpdater
+          global_frame="map"
+          robot_base_frame="base_link"
+          current_operations="{current_operations}">
+        <ExecuteOperation operations="{current_operations}"/>
+      </OperationUpdater>
+
+      <FollowPath
+          path="{path}"
+          controller_id="FollowPath"
+          goal_checker_id="general_goal_checker"/>
+
+    </ReactiveSequence>
+
+  </BehaviorTree>
+</root>

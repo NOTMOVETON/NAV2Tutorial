@@ -1,0 +1,2 @@
+vcstool
+numpy>=1.26

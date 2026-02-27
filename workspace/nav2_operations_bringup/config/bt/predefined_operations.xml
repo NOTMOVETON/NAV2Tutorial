@@ -1,0 +1,21 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+
+      <DriveOnHeading dist_to_travel="0.2" speed="0.3" time_allowance="50"/>
+
+      <ExecuteOperation operations="blade;bool;true"/>
+
+      <DriveOnHeading dist_to_travel="3.0" speed="0.3" time_allowance="50"/>
+
+      <ExecuteOperation operations="blade;bool;false"/>
+
+      <DriveOnHeading dist_to_travel="0.2" speed="0.3" time_allowance="50"/>
+
+      <ExecuteOperation operations="camera;float;0.0"/>
+
+      <!-- <DriveOnHeading dist_to_travel="5.0" speed="0.2" time_allowance="30"/> -->
+
+    </Sequence>
+  </BehaviorTree>
+</root>

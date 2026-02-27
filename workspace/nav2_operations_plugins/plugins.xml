@@ -1,0 +1,8 @@
+<library path="nav2_operations_plugins">
+  <class type="nav2_operations_plugins::ControlRotor" base_class_type="nav2_operations_server::Operation">
+    <description>Instant operation to control lawnmower blade on/off</description>
+  </class>
+  <class type="nav2_operations_plugins::SetCameraYaw" base_class_type="nav2_operations_server::Operation">
+    <description>Non-instant operation to rotate camera to target yaw angle</description>
+  </class>
+</library>

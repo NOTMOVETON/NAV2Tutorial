@@ -1,0 +1,18 @@
+# Goal
+OperationCommand[] operations
+---
+# Result
+uint16 error_code
+string error_msg
+uint16 operations_completed
+uint16 operations_total
+
+uint16 NONE=0
+uint16 UNKNOWN_OPERATION=1
+uint16 OPERATION_FAILED=2
+uint16 CANCELLED=3
+---
+# Feedback
+string current_operation_name
+uint16 operations_completed
+uint16 operations_total

@@ -1,0 +1,45 @@
+volumes:
+  nav2_tutorials_build:
+    name: nav2_tutorials_build
+  nav2_tutorials_install:
+    name: nav2_tutorials_install
+  nav2_tutorials_log:
+    name: nav2_tutorials_log
+
+x-ros-env: &ros-env
+  DISPLAY: ${DISPLAY}
+  QT_X11_NO_MITSHM: "1"
+  XAUTHORITY: /root/.Xauthority
+  RMW_IMPLEMENTATION: "rmw_fastrtps_cpp"
+
+x-ros-service: &ros-service
+  image: nav2_tutorials:jazzy
+  tty: true
+  network_mode: host
+  privileged: true
+  environment:
+    <<: *ros-env
+  volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - ../workspace2:/ros2_ws/src/:rw
+    - nav2_tutorials_build:/ros2_ws/build
+    - nav2_tutorials_install:/ros2_ws/install
+    - nav2_tutorials_log:/ros2_ws/log
+    - ./assets/entry_script.sh:/entry_script.sh
+  command: [ "bash", "/entry_script.sh" ]
+
+services:
+  nav2_tutorials_build:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    image: nav2_tutorials:jazzy
+    profiles: [build]
+
+  nav2_tutorials:
+    <<: *ros-service
+    container_name: nav2_tutorials
+    environment:
+      CONTAINER_NAME: nav2_tutorials
+      ROS_DOMAIN_ID: "0"
+      <<: *ros-env
