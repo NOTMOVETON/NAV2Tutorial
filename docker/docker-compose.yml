@@ -21,7 +21,7 @@ x-ros-service: &ros-service
     <<: *ros-env
   volumes:
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    - ../workspace2:/ros2_ws/src/:rw
+    - ../workspace:/ros2_ws/src/:rw
     - nav2_tutorials_build:/ros2_ws/build
     - nav2_tutorials_install:/ros2_ws/install
     - nav2_tutorials_log:/ros2_ws/log
