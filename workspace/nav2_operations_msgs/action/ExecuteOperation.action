@@ -8,9 +8,9 @@ uint16 operations_completed
 uint16 operations_total
 
 uint16 NONE=0
-uint16 UNKNOWN_OPERATION=1
-uint16 OPERATION_FAILED=2
-uint16 CANCELLED=3
+uint16 UNKNOWN_OPERATION=20001
+uint16 OPERATION_FAILED=20002
+uint16 CANCELLED=20003
 ---
 # Feedback
 string current_operation_name
