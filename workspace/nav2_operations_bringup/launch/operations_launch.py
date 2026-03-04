@@ -30,6 +30,15 @@ def generate_launch_description():
             default_value='false',
             description='Use simulation time'),
 
+        # Nav2 Planner Server
+        Node(
+            package='nav2_planner',
+            executable='planner_server',
+            name='planner_server',
+            output='screen',
+            parameters=[configured_params],
+        ),
+
         # Nav2 Controller Server
         Node(
             package='nav2_controller',
@@ -66,6 +75,15 @@ def generate_launch_description():
             parameters=[configured_params],
             # remappings=[('cmd_vel', 'cmd_vel_nav')],
             ),
+        Node(
+            package='nav2_velocity_smoother',
+            executable='velocity_smoother',
+            name='velocity_smoother',
+            output='screen',
+            respawn_delay=2.0,
+            parameters=[configured_params],
+            # remappings=[('cmd_vel', 'cmd_vel_nav')],
+            ),
 
         # Lifecycle Manager for Nav2 nodes
         Node(
@@ -77,10 +95,12 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
                 'autostart': True,
                 'node_names': [
+                    'planner_server',
                     'controller_server',
                     'bt_navigator',
                     'operations_server',
                     'behavior_server',
+                    'velocity_smoother',
                 ],
             }],
         ),
@@ -118,5 +138,13 @@ def generate_launch_description():
                 'rotation_speed': 45.0,
                 'update_rate': 20.0,
             }],
+        ),
+
+        # RViz Goal Client — subscribes to /goal_pose and calls FollowPathWithOperations
+        Node(
+            package='nav2_operations_test_nodes',
+            executable='rviz_goal_client.py',
+            name='rviz_goal_client',
+            output='screen',
         ),
     ])
