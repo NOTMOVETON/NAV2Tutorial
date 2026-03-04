@@ -27,7 +27,7 @@ FakeRobot::FakeRobot(const rclcpp::NodeOptions & options)
 
   // Subscriber
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-    "/cmd_vel", 10,
+    "/cmd_vel_smoothed", 10,
     std::bind(&FakeRobot::cmdVelCallback, this, std::placeholders::_1));
 
   // Publishers

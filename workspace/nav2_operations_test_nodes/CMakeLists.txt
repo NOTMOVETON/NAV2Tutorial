@@ -44,4 +44,8 @@ install(TARGETS
   camera_simulator_node
   DESTINATION lib/${PROJECT_NAME})
 
+install(PROGRAMS
+  scripts/rviz_goal_client.py
+  DESTINATION lib/${PROJECT_NAME})
+
 ament_package()
