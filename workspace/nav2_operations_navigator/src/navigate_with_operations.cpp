@@ -145,13 +145,13 @@ NavigateWithOperations::goalCompleted(
 
   if (final_bt_status == nav2_behavior_tree::BtStatus::SUCCEEDED) {
     RCLCPP_INFO(logger_, "NavigateWithOperations completed successfully");
-    result->error_code = 0;
+    result->error_code = 0; // stub
   } else if (final_bt_status == nav2_behavior_tree::BtStatus::FAILED) {
     RCLCPP_WARN(logger_, "NavigateWithOperations failed");
-    result->error_code = 1;
+    result->error_code = 1; // stub
   } else if (final_bt_status == nav2_behavior_tree::BtStatus::CANCELED) {
     RCLCPP_INFO(logger_, "NavigateWithOperations cancelled");
-    result->error_code = 2;
+    result->error_code = 2; // stub
   }
 
   // Clean blackboard fields
