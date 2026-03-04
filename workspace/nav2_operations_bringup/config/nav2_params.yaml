@@ -10,14 +10,6 @@ bt_navigator:
     navigate_with_operations:
       plugin: nav2_operations_navigator::NavigateWithOperations
     plugin_lib_names:
-      # Standard Nav2 plugins
-      # - nav2_follow_path_action_bt_node
-      # - nav2_back_up_action_bt_node
-      # - nav2_drive_on_heading_bt_node
-      # - nav2_wait_action_bt_node
-      # - nav2_recovery_node_bt_node
-      # - nav2_controller_cancel_bt_node
-      # Custom operations plugins
       - nav2_execute_operation_action_bt_node
       - nav2_cancel_operation_action_bt_node
       - nav2_pause_operations_server_bt_node
