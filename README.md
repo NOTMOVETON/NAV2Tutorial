@@ -1233,7 +1233,7 @@ For Tree B (sequential predefined operations), no path or operation triggers are
 ```bash
 ros2 action send_goal /navigate_with_operations \
   nav2_operations_msgs/action/FollowPathWithOperations \
-  "{behavior_tree: '/path/to/predefined_operations.xml',
+  "{behavior_tree: '/ros2_ws/src/nav2_operations_bringup/bt/predefined_operations.xml',
     path: {header: {frame_id: map}, poses: []},
     operations_at_poses: []}"
 ```
