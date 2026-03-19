@@ -254,7 +254,7 @@ for (auto & [idx, entry] : h_) {
 return BT::NodeStatus::SUCCESS;
 ```
 
-Exporting BT nodes and the navigator plugin via `pluginlib` is a standard ROS 2 operation and is not covered in detail here — refer to the [Writing a new behavior tree plugin tutorial]([https://docs.nav2.org/plugin_tutorials/docs/writing_new_navigator_plugin.html](https://docs.nav2.org/plugin_tutorials/docs/writing_new_bt_plugin.html) for the full pattern.
+Exporting BT nodes and the navigator plugin via `pluginlib` is a standard ROS 2 operation and is not covered in detail here — refer to the [Writing a new behavior tree plugin tutorial](https://docs.nav2.org/plugin_tutorials/docs/writing_new_navigator_plugin.html) for the full pattern.
 
 ---
 
