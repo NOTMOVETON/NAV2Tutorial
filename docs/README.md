@@ -128,7 +128,7 @@ We've only briefly discussed BT nodes, plugins for the navigator and our custom 
 
 The data flow end to end:
 
-![alt text](docs/image.png)
+![alt text](./image.png)
 
 Notice that nothing in this stack requires modifying Nav2 source code. The entire system is built as an overlay on top of the already-built Nav2 stack installed with apt.
 
