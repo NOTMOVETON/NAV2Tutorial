@@ -83,6 +83,8 @@ ENV DEV_USER=$DEV_USER
 RUN mkdir -p $WORKDIR/src
 WORKDIR $WORKDIR
 
+
+
 # ---------- rosdep ----------
 RUN rosdep init || true && \
     for i in 1 2 3 4 5; do \
