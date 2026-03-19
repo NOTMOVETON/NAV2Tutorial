@@ -15,9 +15,9 @@
 
 ## Overview
 
-This tutorial shows how to integrate custom hardware control into Nav2 by building a task server, connecting it to the behavior tree via custom BT nodes, and accepting goals for it through a custom navigator plugin — all as a colcon overlay with no changes to Nav2 source code.
+This tutorial shows how to integrate custom control into Nav2 by building a task server, connecting it to the behavior tree via custom BT nodes, and accepting goals for it through a custom navigator plugin — all as an overlay with no changes to Nav2 source code.
 
-As a running example we use a lawnmower robot that needs to turn a blade on and off and rotate a servo camera at specific poses along a path. Nav2 handles planning and path following reliably, but provides no built-in mechanism for saying *"when the robot reaches this pose, turn the blade on."* The stack we build here adds that capability cleanly.
+As a running example we use a lawnmower robot that needs to turn a blade on and off and rotate a servo camera at specific poses along a path. Nav2 handles planning and path following reliably, but provides no built-in mechanism for saying *"when the robot reaches this pose, turn the blade on."* The stack we build here adds that capability.
 
 The full pipeline has three layers:
 
@@ -204,7 +204,7 @@ convertFromString<std::vector<nav2_operations_msgs::msg::OperationCommand>>(Stri
 When no trigger is nearby the decorator returns `SUCCESS`, signalling to a `ReactiveSequence` that it should proceed to tick `FollowPath` normally. When a trigger fires and the child returns `RUNNING`, the sequence halts `FollowPath` until the operation finishes.
 
 ```cpp
-// Phase 3 — if a multi-tick operation is already running, keep ticking its child
+// if a multi-tick operation is already running, keep ticking its child
 if (performing_) {
   RCLCPP_INFO(node_->get_logger(), "OperationUpdater: PERFORMING");
   const BT::NodeStatus child_state = child_node_->executeTick();
@@ -217,7 +217,7 @@ if (performing_) {
   return BT::NodeStatus::RUNNING;
 }
 
-// Phase 4 — scan pending triggers and fire the first one in range
+// scan pending triggers and fire the first one in range
 for (auto & [idx, entry] : h_) {
   const auto & [trigger_pose, operations] = entry;
   double dx = current_pose_.pose.position.x - trigger_pose.pose.position.x;
@@ -250,7 +250,7 @@ for (auto & [idx, entry] : h_) {
   }
 }
 
-// No trigger in range — signal the ReactiveSequence to proceed to FollowPath
+// No trigger in range - signal the ReactiveSequence to proceed to FollowPath
 return BT::NodeStatus::SUCCESS;
 ```
 
