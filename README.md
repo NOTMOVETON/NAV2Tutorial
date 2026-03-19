@@ -25,8 +25,6 @@ The full pipeline has three layers:
 - **BT nodes** (`ExecuteOperation` and `OperationUpdater`) that invoke the server from inside a behavior tree.
 - A **navigator plugin** (`NavigateWithOperations`) that accepts goals combining a path with pose-triggered operations and writes them to the BT blackboard.
 
-> **Note:** This is a tutorial example with many rough edges. It is better not to use this code in real production systems.
-
 ---
 
 ## Requirements
