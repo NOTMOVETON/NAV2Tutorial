@@ -14,8 +14,7 @@
   <exec_depend>nav2_planner</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
   <exec_depend>nav2_common</exec_depend>
-  <exec_depend>nav2_operations_server</exec_depend>
-  <exec_depend>nav2_operations_plugins</exec_depend>
+  <exec_depend>nav2_operations_servers</exec_depend>
   <exec_depend>nav2_operations_bt_nodes</exec_depend>
   <exec_depend>nav2_operations_navigator</exec_depend>
   <exec_depend>nav2_operations_test_nodes</exec_depend>

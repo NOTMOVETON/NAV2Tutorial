@@ -5,31 +5,25 @@ bt_navigator:
     robot_base_frame: base_link
     bt_loop_duration: 100
     always_reload_bt_xml: True
-    default_follow_path_with_operations_bt_xml: "/ros2_ws/src/nav2_operations_bringup/config/bt/follow_path_with_operations.xml"
+    default_navigate_with_operations_bt_xml: "/ros2_ws/src/nav2_operations_bringup/config/bt/navigate_with_operations.xml"
     navigators: ["navigate_with_operations"]
     navigate_with_operations:
       plugin: nav2_operations_navigator::NavigateWithOperations
     plugin_lib_names:
-      - nav2_execute_operation_action_bt_node
-      - nav2_cancel_operation_action_bt_node
-      - nav2_pause_operations_server_bt_node
-      - nav2_resume_operations_server_bt_node
-      - nav2_operation_updater_decorator_bt_node
-      - nav2_my_follow_path_bt_node
+      - nav2_set_blade_state_bt_node
+      - nav2_set_camera_yaw_bt_node
 
-operations_server:
+blade_server:
   ros__parameters:
-    operation_frequency: 10.0
-    operation_plugins: ["ControlRotor", "SetCameraYaw"]
-    ControlRotor:
-      plugin: "nav2_operations_plugins::ControlRotor"
-      action_name: "blade"
-      instant: true
-    SetCameraYaw:
-      plugin: "nav2_operations_plugins::SetCameraYaw"
-      action_name: "camera"
-      instant: false
-      max_rotation_speed: 45.0
+    action_server_result_timeout: 10.0
+    blade_command_topic: "/lawnmower/blade_command"
+
+camera_server:
+  ros__parameters:
+    action_server_result_timeout: 10.0
+    max_rotation_speed: 45.0
+    tolerance: 0.5
+    camera_mount_offset: 0.0
 
 controller_server:
   ros__parameters:

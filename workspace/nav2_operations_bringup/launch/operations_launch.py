@@ -57,11 +57,20 @@ def generate_launch_description():
             parameters=[configured_params],
         ),
 
-        # Operations Server (lifecycle node)
+        # Blade Server (lifecycle node)
         Node(
-            package='nav2_operations_server',
-            executable='operations_server_node',
-            name='operations_server',
+            package='nav2_operations_servers',
+            executable='blade_server_node',
+            name='blade_server',
+            output='screen',
+            parameters=[configured_params],
+        ),
+
+        # Camera Server (lifecycle node)
+        Node(
+            package='nav2_operations_servers',
+            executable='camera_server_node',
+            name='camera_server',
             output='screen',
             parameters=[configured_params],
         ),
@@ -98,7 +107,8 @@ def generate_launch_description():
                     'planner_server',
                     'controller_server',
                     'bt_navigator',
-                    'operations_server',
+                    'blade_server',
+                    'camera_server',
                     'behavior_server',
                     'velocity_smoother',
                 ],
@@ -140,7 +150,7 @@ def generate_launch_description():
             }],
         ),
 
-        # RViz Goal Client — subscribes to /goal_pose and calls FollowPathWithOperations
+        # RViz Goal Client — subscribes to /goal_pose and calls NavigateWithOperations
         Node(
             package='nav2_operations_test_nodes',
             executable='rviz_goal_client.py',

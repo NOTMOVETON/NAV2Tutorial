@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>nav2_operations_plugins</name>
+  <name>nav2_operations_servers</name>
   <version>0.1.0</version>
-  <description>Example operation plugins for Nav2 Operations Server — ControlRotor and SetCameraYaw</description>
+  <description>Dedicated action servers for Nav2 Operations Tutorial</description>
   <maintainer email="bbipki@proton.me">Dmitriy</maintainer>
   <license>Apache-2.0</license>
 
@@ -11,10 +11,10 @@
 
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
-  <depend>pluginlib</depend>
+  <depend>rclcpp_action</depend>
+  <depend>nav2_util</depend>
   <depend>std_msgs</depend>
   <depend>nav2_operations_msgs</depend>
-  <depend>nav2_operations_server</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

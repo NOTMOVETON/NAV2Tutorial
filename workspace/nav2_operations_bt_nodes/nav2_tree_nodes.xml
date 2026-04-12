@@ -1,28 +1,14 @@
 <root BTCPP_format="4">
   <TreeNodesModel>
-    <Action ID="ExecuteOperation">
-      <input_port name="operations" type="std::vector&lt;nav2_operations_msgs::msg::OperationCommand&gt;">Operations to execute</input_port>
-      <output_port name="error_code" type="uint16_t">Error code from result</output_port>
-      <input_port name="server_name" default="execute_operation">Action server name</input_port>
-      <input_port name="server_timeout" default="10">Server timeout</input_port>
+    <Action ID="SetBladeState">
+      <input_port name="enable" type="bool" default="true">true to enable blade, false to disable</input_port>
+      <input_port name="server_name" type="std::string" default="blade_server">Action server name</input_port>
+      <input_port name="server_timeout" type="double" default="10">Timeout for server connection (s)</input_port>
     </Action>
-    <Action ID="CancelOperation">
-      <input_port name="server_name" default="execute_operation">Action server name</input_port>
-      <input_port name="server_timeout" default="10">Server timeout</input_port>
+    <Action ID="SetCameraYaw">
+      <input_port name="target_yaw" type="float" default="0.0">Target camera yaw in degrees</input_port>
+      <input_port name="server_name" type="std::string" default="camera_server">Action server name</input_port>
+      <input_port name="server_timeout" type="double" default="10">Timeout for server connection (s)</input_port>
     </Action>
-    <Action ID="PauseOperationsServer">
-      <input_port name="service_name" default="operations_server/pause">Service name</input_port>
-      <input_port name="server_timeout" default="10">Server timeout</input_port>
-    </Action>
-    <Action ID="ResumeOperationsServer">
-      <input_port name="service_name" default="operations_server/resume">Service name</input_port>
-      <input_port name="server_timeout" default="10">Server timeout</input_port>
-    </Action>
-    <Decorator ID="OperationUpdater">
-      <input_port name="global_frame" default="map">Global frame</input_port>
-      <input_port name="robot_base_frame" default="base_link">Robot base frame</input_port>
-      <input_port name="trigger_distance" default="1.0">Distance threshold</input_port>
-      <output_port name="current_operations">Current operations to execute</output_port>
-    </Decorator>
   </TreeNodesModel>
 </root>
