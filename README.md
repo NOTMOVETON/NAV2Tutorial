@@ -23,7 +23,7 @@ The key insight is the **layered integration pattern**: a dedicated ROS 2 action
 
 For better understanding here is the image of pipeline flow:
 
-![alt text](docs/image3.png)
+![alt text](docs/image4.png)
 
 > **Note:** Both behaviors can alternatively be implemented as Nav2 *behavior plugins* loaded by the `behavior_server`, which avoids writing a separate lifecycle node. But this tutorial deliberately uses standalone action servers to illustrate the full integration path: how to write a Nav2-compatible server from scratch, give it lifecycle management, and expose it to the BT executor as a first-class node type.
 
