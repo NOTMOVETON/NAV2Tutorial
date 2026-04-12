@@ -21,6 +21,10 @@ The example implements a lawnmower robot with two operations:
 
 The key insight is the **layered integration pattern**: a dedicated ROS 2 action server owns each hardware operation, a BT node wraps that server as a tree primitive, and the navigator plugin composes those primitives into a mission via a BT XML file.
 
+For better understanding here is the image of pipeline flow:
+
+![alt text](docs/image3.png)
+
 > **Note:** Both behaviors can alternatively be implemented as Nav2 *behavior plugins* loaded by the `behavior_server`, which avoids writing a separate lifecycle node. But this tutorial deliberately uses standalone action servers to illustrate the full integration path: how to write a Nav2-compatible server from scratch, give it lifecycle management, and expose it to the BT executor as a first-class node type.
 
 ## Requirements
