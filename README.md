@@ -1,4 +1,4 @@
-# Writing a Full Pipeline For New Functionality In Nav2
+# Writing Full Pipeline For a New Functionality In Nav2
 
 - [Overview](#overview)
 - [Requirements](#requirements)
