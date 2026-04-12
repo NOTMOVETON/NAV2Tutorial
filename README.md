@@ -1,4 +1,4 @@
-# Writing a New Operations Tutorial
+# Writing a Full Pipeline For New Functionality In Nav2
 
 - [Overview](#overview)
 - [Requirements](#requirements)
