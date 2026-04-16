@@ -12,8 +12,6 @@
 
 ## Overview
 
-This tutorial shows how to integrate a custom server to do a task specific action as part of navigation using the Nav2 framework. This could be anything from a custom VLM integration, application-specific algorithm, or even a task to complete along the mission. This shows for example how to put together a navigation system following a precomputed path doing hardware operations to engage a mowing blade and rotating a camera for a lawn mowing example.
-
 This tutorial shows how to wire together custom hardware-operation servers, Behavior Tree (BT) action nodes, and a `BehaviorTreeNavigator` plugin so that a robot can execute hardware commands (e.g. engage a mowing blade, rotate a camera) as part of autonomous navigation with Nav2.
 
 The example implements a lawnmower robot with two operations:
@@ -21,7 +19,7 @@ The example implements a lawnmower robot with two operations:
 - **BladeServer** — enables or disables the cutting blade.
 - **CameraServer** — rotates an onboard camera to a target yaw.
 
-The key insight is the **layered integration pattern**: a dedicated ROS 2 action server owns each hardware operation, a BT node wraps an action client that calls this server as a tree primitive, and the navigator plugin composes those primitives into a mission via a BT XML file.
+The key insight is the **layered integration pattern**: a dedicated ROS 2 action server owns each hardware operation, a BT node wraps that server as a tree primitive, and the navigator plugin composes those primitives into a mission via a BT XML file.
 
 For better understanding here is the image of pipeline flow:
 
@@ -84,7 +82,18 @@ uint16 error_code
 # no feedback
 ```
 
-For more details refer to the `nav2_operations_msgs` package in the tutorial code.
+Register all three in `CMakeLists.txt`:
+
+```cmake
+find_package(nav_msgs REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/BladeCommand.action"
+  "action/CameraCommand.action"
+  "action/NavigateWithOperations.action"
+  DEPENDENCIES nav_msgs
+)
+```
 
 ## Step 2 - Implement Dedicated Action Servers
 
@@ -110,71 +119,6 @@ Lifecycle transitions:
 | `on_activate` | Activate publisher, start server, bond |
 | `on_deactivate` | Deactivate server and publisher, destroy bond |
 | `on_cleanup` | Reset all members |
-
-
-
-**`on_configure`** — reads parameters, creates the publisher and action server. Nothing is activated yet; this is setup only.
-
-```cpp
-BladeServer::CallbackReturn
-BladeServer::on_configure(const rclcpp_lifecycle::State & /*state*/)
-{
-  blade_command_topic_ = get_parameter("blade_command_topic").as_string();
-
-  // Publisher is created but not yet activated — it won't send messages until on_activate
-  blade_pub_ = create_publisher<std_msgs::msg::Bool>(blade_command_topic_, 10);
-
-  double result_timeout = get_parameter("action_server_result_timeout").as_double();
-  rcl_action_server_options_t server_options = rcl_action_server_get_default_options();
-  server_options.result_timeout.nanoseconds = RCL_S_TO_NS(result_timeout);
-
-  // Action server is created but not yet accepting goals
-  action_server_ = std::make_unique<ActionServer>(
-    shared_from_this(), "blade_server",
-    std::bind(&BladeServer::execute, this),
-    nullptr, std::chrono::milliseconds(500), true, server_options);
-
-  return CallbackReturn::SUCCESS;
-}
-```
-
-**`on_activate`** — activates the publisher and action server so they can send messages and accept goals, then creates a bond with the lifecycle manager so it detects crashes.
-
-```cpp
-BladeServer::CallbackReturn
-BladeServer::on_activate(const rclcpp_lifecycle::State & /*state*/)
-{
-  blade_pub_->on_activate();
-  action_server_->activate();
-  createBond();  // bond lets lifecycle_manager detect if this node crashes
-  return CallbackReturn::SUCCESS;
-}
-```
-
-**`on_deactivate`** — reverses activation in the opposite order: server first (stop accepting goals), then publisher, then destroy the bond.
-
-```cpp
-BladeServer::CallbackReturn
-BladeServer::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
-{
-  action_server_->deactivate();
-  blade_pub_->on_deactivate();
-  destroyBond();
-  return CallbackReturn::SUCCESS;
-}
-```
-
-**`on_cleanup`** — releases all resources so the node returns to a clean state and could be reconfigured.
-
-```cpp
-BladeServer::CallbackReturn
-BladeServer::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
-{
-  action_server_.reset();
-  blade_pub_.reset();
-  return CallbackReturn::SUCCESS;
-}
-```
 
 Execute handler:
 
@@ -213,8 +157,6 @@ Lifecycle transitions:
 | `on_deactivate` | Deactivate server and publisher, destroy bond |
 | `on_cleanup` | Reset all members |
 
-`CameraServer` follows the same lifecycle pattern as `BladeServer` above — `on_configure` reads parameters and creates the publisher and action server, `on_activate` activates them and bonds to the lifecycle manager, `on_deactivate` reverses that, and `on_cleanup` resets all members. The full implementation is in `workspace/nav2_operations_servers/src/camera_server.cpp`.
-
 The execute loop checks for cancellation, steps `current_yaw_` toward `target_yaw`, publishes the intermediate yaw, and exits when within `tolerance_`:
 
 ```cpp
@@ -232,7 +174,18 @@ while (rclcpp::ok()) {
 }
 ```
 
-For more details refer to the `nav2_operations_servers` package in the tutorial code.
+`CMakeLists.txt` for `nav2_operations_servers`:
+
+```cmake
+add_executable(blade_server_node src/blade_server.cpp)
+ament_target_dependencies(blade_server_node ${dependencies})
+
+add_executable(camera_server_node src/camera_server.cpp)
+ament_target_dependencies(camera_server_node ${dependencies})
+
+install(TARGETS blade_server_node camera_server_node
+  DESTINATION lib/${PROJECT_NAME})
+```
 
 ## Step 3 - Implement Behavior Tree Nodes
 
@@ -286,7 +239,15 @@ BT_REGISTER_NODES(factory)
 
 Follows the same pattern with `float target_yaw` as the input port and connects to the `camera_server` action server.
 
-For more details refer to the `nav2_operations_bt_nodes` package in the tutorial code.
+Registering the libraries in `CMakeLists.txt`:
+
+```cmake
+add_library(nav2_set_blade_state_bt_node SHARED src/action/set_blade_state.cpp)
+target_compile_definitions(nav2_set_blade_state_bt_node PRIVATE BT_PLUGIN_EXPORT)
+
+add_library(nav2_set_camera_yaw_bt_node SHARED src/action/set_camera_yaw.cpp)
+target_compile_definitions(nav2_set_camera_yaw_bt_node PRIVATE BT_PLUGIN_EXPORT)
+```
 
 Model XML (`nav2_tree_nodes.xml`):
 
@@ -305,7 +266,7 @@ Model XML (`nav2_tree_nodes.xml`):
 
 ## Step 4 - Implement the Navigator Plugin
 
-The navigator inherits from `nav2_core::BehaviorTreeNavigator<ActionT>` and is registered via `pluginlib`. The navigator plugin is what runs in the BT Navigator server to expose a ROS 2 action interface (what the client calls), which creates the behavior tree based on the BT XML file (what actually runs) with the request fields of the action. It also computes and publishes the feedback along the route and final goal response fields. When a goal arrives, `goalReceived()` writes the goal fields onto the BT blackboard so that BT nodes can read them as input ports. The BT is then ticked by the navigator loop until it returns `SUCCESS` or `FAILURE`.
+The navigator inherits from `nav2_core::BehaviorTreeNavigator<ActionT>` and is registered via `pluginlib`. The navigator plugin is what links a ROS 2 action interface (what the client calls) to a BT XML file (what actually runs). When a goal arrives, `goalReceived()` writes the goal fields onto the BT blackboard so that BT nodes can read them as input ports. The BT is then ticked by the navigator loop until it returns `SUCCESS` or `FAILURE`.
 
 The `behavior_tree` string field in the goal allows the caller to specify which BT XML file to load at runtime. This is what makes the navigator reusable across different mission profiles — the same navigator plugin can execute a blade-control mission or a camera-repositioning mission depending on which XML is passed. If the field is empty, the navigator falls back to `default_navigate_with_operations_bt_xml` from the parameters.
 
@@ -322,7 +283,7 @@ Virtual method summary:
 | `onPreempt()` | Accept or reject pending goal based on BT file |
 | `goalCompleted()` | Write `error_code` (0/1/2), clear blackboard |
 
-**`goalReceived`** — loads the BT file and writes the path to the blackboard so BT nodes can read it immediately on the first tick.
+`goalReceived` sample:
 
 ```cpp
 bool NavigateWithOperations::goalReceived(
@@ -336,61 +297,6 @@ bool NavigateWithOperations::goalReceived(
   blackboard->set<nav_msgs::msg::Path>(path_blackboard_id_, goal->path);
   active_goal_ = true;
   return true;
-}
-```
-
-**`onLoop`** — called on every tick of the BT executor loop. This is where the navigator publishes action feedback to the client. For this navigator the feedback is empty, but a richer implementation could read progress from the blackboard here.
-
-```cpp
-void NavigateWithOperations::onLoop()
-{
-  bt_action_server_->publishFeedback(std::make_shared<ActionT::Feedback>());
-}
-```
-
-**`goalCompleted`** — called once when the tree finishes. Maps the BT outcome to an error code in the action result and clears the blackboard so a subsequent goal that reuses the same BT file does not find stale data.
-
-```cpp
-void NavigateWithOperations::goalCompleted(
-  typename ActionT::Result::SharedPtr result,
-  const nav2_behavior_tree::BtStatus final_bt_status)
-{
-  active_goal_ = false;
-
-  if (final_bt_status == nav2_behavior_tree::BtStatus::SUCCEEDED) {
-    result->error_code = 0;
-  } else if (final_bt_status == nav2_behavior_tree::BtStatus::FAILED) {
-    result->error_code = 1;
-  } else {
-    result->error_code = 2;
-  }
-
-  // Clear blackboard so the next goal does not see stale values
-  auto blackboard = bt_action_server_->getBlackboard();
-  blackboard->set<nav_msgs::msg::Path>(path_blackboard_id_, nav_msgs::msg::Path());
-}
-```
-
-**`onPreempt`** — called when a new goal arrives while the tree is still running. Accepts the preemption only if the new goal requests the same BT file; switching files mid-run would require hard cancellation of the current tree, so mismatched requests are rejected and the client is asked to cancel and resend.
-
-```cpp
-void NavigateWithOperations::onPreempt(
-  typename ActionT::Goal::ConstSharedPtr goal)
-{
-  if (goal->behavior_tree == bt_action_server_->getCurrentBTFilename() ||
-    (goal->behavior_tree.empty() &&
-     bt_action_server_->getCurrentBTFilename() ==
-       bt_action_server_->getDefaultBTFilename()))
-  {
-    // Same BT file — accept the new goal and update the blackboard in-place
-    auto pending_goal = bt_action_server_->acceptPendingGoal();
-    auto blackboard = bt_action_server_->getBlackboard();
-    blackboard->set<nav_msgs::msg::Path>(path_blackboard_id_, pending_goal->path);
-  } else {
-    RCLCPP_WARN(logger_,
-      "Preemption rejected: BT file mismatch. Cancel and resend to change BT.");
-    bt_action_server_->terminatePendingGoal();
-  }
 }
 ```
 
