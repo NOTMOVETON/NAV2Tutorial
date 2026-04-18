@@ -1,5 +1,7 @@
 # Writing Full Pipeline For a New Functionality In Nav2
 
+![alt text](docs/demo.gif)
+
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Package Structure](#package-structure)
@@ -9,6 +11,7 @@
 - [Step 4 - Implement the Navigator Plugin](#step-4---implement-the-navigator-plugin)
 - [Step 5 - Write Behavior Tree XML](#step-5---write-behavior-tree-xml)
 - [Step 6 - Configure Parameters and Launch](#step-6---configure-parameters-and-launch)
+- [Step 7 - Build and Run](#step-7---build-and-run)
 
 ## Overview
 
@@ -27,13 +30,26 @@ For better understanding here is the image of pipeline flow:
 
 ![alt text](docs/image4.png)
 
-> **Note:** Both behaviors can alternatively be implemented as Nav2 *behavior plugins* loaded by the `behavior_server`, which avoids writing a separate lifecycle node. But this tutorial deliberately uses standalone action servers to illustrate the full integration path: how to write a Nav2-compatible server from scratch, give it lifecycle management, and expose it to the BT executor as a first-class node type.
+### Data flow explanation
+
+Here is how a navigation request travels through the stack end-to-end:
+
+1. **Client -> Navigator plugin**: The `bt_navigator` node loads and manages navigator plugins via pluginlib. Each plugin registers its own ROS 2 action server during activation. A client sends a goal directly to that action server (e.g. `navigate_with_operations`). The goal has all fields already formed — how that is done is covered in Step 7.
+2. **Navigator plugin -> Behavior Tree**: The plugin's `goalReceived()` loads the BT XML file specified in the goal (or the default tree if none is provided) and writes all required variables onto the blackboard — in this demo that is only the path (`nav_msgs/Path`). The BT executor then begins ticking the tree.
+3. **Behavior Tree -> BT nodes**: The tree on the diagram sequences three BT action nodes (`SetBladeState`, `FollowPath`, `SetCameraYaw`). Each node is a thin wrapper around a ROS 2 action client; it reads its inputs from blackboard ports, sends the action goal, and maps the server response back to a `BT::NodeStatus`.
+4. **BT nodes -> Task servers**: Each action client calls a dedicated ROS 2 action server that owns one operation (`blade_server`, `controller_server`, `camera_server`). The server executes the hardware command and streams feedback or returns a result.
+5. **Task servers -> Hardware**: Each server owns a hardware abstraction layer — it publishes commands to ROS 2 topics that physical hardware drivers or simulation nodes subscribe to. For example, `blade_server` publishes `std_msgs/Bool` to `/lawnmower/blade_command`; `camera_server` drives rotation and publishes the current yaw as `std_msgs/Float32`. The hardware driver (or simulator) subscribes to these topics and actuates the physical device. The rest of the stack never touches hardware directly.
+
+
+For another real-world example of this pattern see [opennav_coverage](https://github.com/open-navigation/opennav_coverage) — a coverage planning navigator uses the same approach.
+
+> **Note:** Both operation servers can alternatively be implemented as Nav2 *behavior plugins* loaded by the `behavior_server`, which avoids writing a separate lifecycle node. But this tutorial deliberately uses standalone action servers to illustrate the full integration path: how to write a Nav2-compatible server from scratch, give it lifecycle management, and expose it to the BT executor as a first-class node type.
 
 ## Requirements
 
 - ROS 2 (Jazzy or later)
 - Nav2 (binary or source)
-- `nav2_operations_msgs` built in the same workspace
+- Docker
 
 ## Package Structure
 
@@ -471,7 +487,16 @@ camera_server:
 # other servers as usual
 ```
 
-### Launch file sample (`operations_launch.py`)
+### Launch file (`operations_launch.py`)
+
+The single launch file brings up the entire stack:
+
+- **Nav2 core** — `planner_server`, `controller_server`, `behavior_server`, `velocity_smoother`, `bt_navigator`
+- **Custom operation servers** — `blade_server`, `camera_server`
+- **Lifecycle manager** — configures and activates all lifecycle nodes in sequence
+- **Simulation and test nodes** — `fake_robot`, `blade_simulator`, `camera_simulator`, `rviz_goal_client` (covered in Step 7)
+
+Add the custom servers alongside the Nav2 nodes:
 
 ```python
 Node(
@@ -496,38 +521,71 @@ Lifecycle manager `node_names`:
 'node_names': [
     'planner_server',
     'controller_server',
-    'bt_navigator',
     'blade_server',
     'camera_server',
     'behavior_server',
     'velocity_smoother',
+    'bt_navigator',
 ]
 ```
 
 ## Step 7 - Build and Run
 
-Build the workspace:
+For step by step video on how to launch and try demos with explanations [click here](https://youtu.be/3IUE7dGl_d8).
+
+First of all to try demis build the workspace:
 
 ```bash
 cd /ros2_ws && colcon build --symlink-install
 source install/setup.bash
 ```
 
-Launch the full stack:
+**Additional:** if you want to use project's docker copy commands below to fully build (including colcon build), and use docker as if ROS2 was installed directly:
+```bash
+docker/run.sh --build
+
+docker/run.sh
+
+docker exec -it nav2_tutorials bash
+```
+
+Two launch configurations are provided, each paired with its own params file:
+
+| **Launch file** | **Params file** | **BT used** |
+| :--- | :--- | :--- |
+| `operations_launch.py` | `nav2_params.yaml` | `navigate_with_operations.xml` — follow a planned path with blade on/off |
+| `predefined_operations_launch.py` | `nav2_params_predefined.yaml` | `predefined_operations.xml` — hardcoded straight-line mow sequence |
+
+
+Launch the default stack (path following with blade control):
 
 ```bash
 ros2 launch nav2_operations_bringup operations_launch.py
 ```
 
-This starts Nav2 (planner, controller, BT navigator), both operation servers, the fake robot, and RViz. Open RViz, set a **2D Nav Goal** on the map, and observe the following sequence in the terminal logs:
-
-1. `rviz_goal_client` receives the goal pose and calls the planner to compute a path.
-2. The path is sent to `NavigateWithOperations`.
-3. The BT executes: `SetBladeState(enable=true)` → `FollowPath` → `SetBladeState(enable=false)`.
-4. `/lawnmower/blade_command` publishes `True` at the start of the path and `False` at the end.
-
-To verify the blade topic directly:
+Or launch the predefined straight-line mow sequence:
 
 ```bash
-ros2 topic echo /lawnmower/blade_command
+ros2 launch nav2_operations_bringup predefined_operations_launch.py
 ```
+
+Both launch files starts the full stack. In addition to the Nav2 core and the custom operation servers, the launch files also starts three lightweight simulation nodes from `nav2_operations_test_nodes`:
+
+- **`fake_robot`** — integrates `/cmd_vel` commands into a pose, publishes `odom` and the `odom -> base_link` TF transform at 50 Hz. Written specifically for this demo to keep the setup self-contained.
+- **`blade_simulator`** — subscribes to `/lawnmower/blade_command` and logs blade state changes, simulating the hardware response.
+- **`camera_simulator`** — subscribes to the camera action server's output and simulates incremental yaw rotation.
+
+These nodes are already written and ready to use, there is no need to reimplement them since they were added only for ease of demonstration.
+
+RViz's built-in navigation panel cannot send goals to a custom navigator without a dedicated RViz plugin. Instead, `rviz_goal_client.py` (`nav2_operations_test_nodes/scripts/rviz_goal_client.py`) bridges that gap:
+
+1. Subscribes to `/goal_pose` — the `PoseStamped` topic published by RViz's **2D Nav Goal** button.
+2. Calls `BasicNavigator.getPath()` from official Nav2 Simple Commander API to compute a path from the current pose to the goal via loaded planner.
+3. Builds a `NavigateWithOperations` action goal with the computed `nav_msgs/Path` and the BT XML file path.
+4. Sends the goal to the `navigate_with_operations` action server.
+5. `rviz_goal_client.ros__parameters.bt_xml_file` — the BT path that `rviz_goal_client` explicitly sends in every goal.
+
+Set a **2D Nav Goal** in RViz and watch the robot driving and executing operations!
+
+You can see operations execution in RViz with green (blade on) or red (blade off) dots along robots trajectory and blue arrow attached to robot that mimicks camera yaw control.
+
