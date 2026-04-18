@@ -127,7 +127,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        blade_simulator: true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -153,7 +153,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz_default_plugins/Path
       Color: 0; 0; 255
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -176,7 +176,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /received_global_plan
-      Value: false
+      Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
       Name: MarkerArray
@@ -242,9 +242,9 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 4.082781791687012
-        Y: -7.416126728057861
-        Z: -1.042296290397644
+        X: 0.7858787775039673
+        Y: -1.5074692964553833
+        Z: -1.1454455852508545
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

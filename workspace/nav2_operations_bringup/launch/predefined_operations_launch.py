@@ -1,21 +1,19 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node, LifecycleNode
-from launch_ros.actions import PushRosNamespace
+from launch_ros.actions import Node
 from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
     bringup_dir = get_package_share_directory('nav2_operations_bringup')
 
-    params_file = os.path.join(bringup_dir, 'config', 'nav2_params.yaml')
+    params_file = os.path.join(bringup_dir, 'config', 'nav2_params_predefined.yaml')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
 
-    # Rewrite params to set the BT XML path and use_sim_time
     param_substitutions = {
         'use_sim_time': use_sim_time,
     }
@@ -48,15 +46,6 @@ def generate_launch_description():
             parameters=[configured_params],
         ),
 
-        # Nav2 BT Navigator
-        Node(
-            package='nav2_bt_navigator',
-            executable='bt_navigator',
-            name='bt_navigator',
-            output='screen',
-            parameters=[configured_params],
-        ),
-
         # Blade Server (lifecycle node)
         Node(
             package='nav2_operations_servers',
@@ -74,7 +63,7 @@ def generate_launch_description():
             output='screen',
             parameters=[configured_params],
         ),
-        
+
         Node(
             package='nav2_behaviors',
             executable='behavior_server',
@@ -82,8 +71,7 @@ def generate_launch_description():
             output='screen',
             respawn_delay=2.0,
             parameters=[configured_params],
-            # remappings=[('cmd_vel', 'cmd_vel_nav')],
-            ),
+        ),
         Node(
             package='nav2_velocity_smoother',
             executable='velocity_smoother',
@@ -91,8 +79,16 @@ def generate_launch_description():
             output='screen',
             respawn_delay=2.0,
             parameters=[configured_params],
-            # remappings=[('cmd_vel', 'cmd_vel_nav')],
-            ),
+        ),
+
+        # Nav2 BT Navigator
+        Node(
+            package='nav2_bt_navigator',
+            executable='bt_navigator',
+            name='bt_navigator',
+            output='screen',
+            parameters=[configured_params],
+        ),
 
         # Lifecycle Manager for Nav2 nodes
         Node(
@@ -106,11 +102,11 @@ def generate_launch_description():
                 'node_names': [
                     'planner_server',
                     'controller_server',
-                    'bt_navigator',
                     'blade_server',
                     'camera_server',
                     'behavior_server',
                     'velocity_smoother',
+                    'bt_navigator',
                 ],
             }],
         ),

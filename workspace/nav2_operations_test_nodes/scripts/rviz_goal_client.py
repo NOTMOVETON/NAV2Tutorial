@@ -18,13 +18,16 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 
 from nav2_operations_msgs.action import NavigateWithOperations
 
-BT_XML_FILE = '/ros2_ws/src/nav2_operations_bringup/config/bt/navigate_with_operations.xml'
+DEFAULT_BT_XML_FILE = '/ros2_ws/src/nav2_operations_bringup/config/bt/navigate_with_operations.xml'
 ACTION_SERVER_NAME = 'navigate_with_operations'
 
 
 class RvizGoalClient(Node):
     def __init__(self):
         super().__init__('rviz_goal_client')
+
+        self.declare_parameter('bt_xml_file', DEFAULT_BT_XML_FILE)
+        self._bt_xml_file = self.get_parameter('bt_xml_file').get_parameter_value().string_value
 
         self._navigator = BasicNavigator(node_name='rviz_goal_client_navigator')
 
@@ -37,7 +40,8 @@ class RvizGoalClient(Node):
             PoseStamped, '/goal_pose', self._goal_pose_callback, 10)
 
         self.get_logger().info(
-            'RvizGoalClient ready. Set a "2D Nav Goal" in RViz to trigger navigation.')
+            f'RvizGoalClient ready. BT file: {self._bt_xml_file}. '
+            'Set a "2D Nav Goal" in RViz to trigger navigation.')
 
     def _goal_pose_callback(self, msg: PoseStamped):
         self.get_logger().info(
@@ -79,7 +83,7 @@ class RvizGoalClient(Node):
             return
 
         goal_msg = NavigateWithOperations.Goal()
-        goal_msg.behavior_tree = BT_XML_FILE
+        goal_msg.behavior_tree = self._bt_xml_file
         goal_msg.path = path
 
         self.get_logger().info('Sending NavigateWithOperations goal...')
