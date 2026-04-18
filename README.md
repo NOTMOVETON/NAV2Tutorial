@@ -533,7 +533,7 @@ Lifecycle manager `node_names`:
 
 ## Step 7 - Build and Run
 
-> Note: For step by step video on how to launch and try demos with explanations [click here](https://youtu.be/3IUE7dGl_d8).
+> Note: For step by step video on how to launch and try demos with explanations [click here](https://youtu.be/Au8p1TmpboI).
 
 First of all to try demis build the workspace:
 
