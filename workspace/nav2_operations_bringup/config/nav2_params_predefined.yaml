@@ -5,7 +5,7 @@ bt_navigator:
     robot_base_frame: base_link
     bt_loop_duration: 100
     always_reload_bt_xml: True
-    default_navigate_with_operations_bt_xml: "/ros2_ws/src/nav2_operations_bringup/config/bt/predefined_operations.xml"
+    default_navigate_with_operations_bt_xml: "$(find-pkg-share nav2_operations_bringup)/config/bt/predefined_operations.xml"
     navigators: ["navigate_with_operations"]
     navigate_with_operations:
       plugin: nav2_operations_navigator::NavigateWithOperations
