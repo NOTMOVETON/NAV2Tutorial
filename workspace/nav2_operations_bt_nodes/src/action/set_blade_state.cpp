@@ -11,6 +11,15 @@ void SetBladeState::on_tick()
   goal_.enable = enable;
 }
 
+// Use the action result to decide the BT node status
+BT::NodeStatus SetBladeState::on_success()
+{
+  return result_.result->success ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+}
+// Base-class defaults for reference:
+// BT::NodeStatus SetBladeState::on_aborted()   { return BT::NodeStatus::FAILURE; }
+// BT::NodeStatus SetBladeState::on_cancelled() { return BT::NodeStatus::SUCCESS; }
+
 }  // namespace nav2_operations_bt_nodes
 
 #include "behaviortree_cpp/bt_factory.h"

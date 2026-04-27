@@ -32,7 +32,7 @@ public:
 
   void on_tick() override;
 
-  BT::NodeStatus on_success() override { return BT::NodeStatus::SUCCESS; }
+  BT::NodeStatus on_success() override;
 };
 
 }  // namespace nav2_operations_bt_nodes
