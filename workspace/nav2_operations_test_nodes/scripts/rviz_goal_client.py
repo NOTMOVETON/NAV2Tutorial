@@ -101,7 +101,10 @@ class RvizGoalClient(Node):
         result_future.add_done_callback(self._result_callback)
 
     def _feedback_callback(self, feedback_msg):
-        pass
+        fb = feedback_msg.feedback
+        secs = fb.navigation_time.sec + fb.navigation_time.nanosec * 1e-9
+        self.get_logger().info(
+            f'Navigation time: {secs:.1f}s | Path poses: {fb.path_poses_count}')
 
     def _result_callback(self, future):
         result = future.result().result

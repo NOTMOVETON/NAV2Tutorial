@@ -34,6 +34,7 @@ NavigateWithOperations::configure(
   }
 
   path_blackboard_id_ = node->get_parameter("path_blackboard_id").as_string();
+  clock_ = node->get_clock();
 
   auto blackboard = bt_action_server_->getBlackboard();
   blackboard->set<nav_msgs::msg::Path>(path_blackboard_id_, nav_msgs::msg::Path());
@@ -67,13 +68,27 @@ NavigateWithOperations::goalReceived(
   blackboard->set<nav_msgs::msg::Path>(path_blackboard_id_, goal->path);
 
   active_goal_ = true;
+  goal_start_time_ = clock_->now();
   return true;
 }
 
 void
 NavigateWithOperations::onLoop()
 {
-  bt_action_server_->publishFeedback(std::make_shared<ActionT::Feedback>());
+  auto feedback = std::make_shared<ActionT::Feedback>();
+
+  feedback->navigation_time = clock_->now() - goal_start_time_;
+
+  // Read a value from the BT blackboard and publish it as feedback.
+  // The path is written here once by goalReceived(); a BT action node
+  // could write a separate progress key that gets read here instead.
+  auto blackboard = bt_action_server_->getBlackboard();
+  nav_msgs::msg::Path current_path;
+  if (blackboard->get<nav_msgs::msg::Path>(path_blackboard_id_, current_path)) {
+    feedback->path_poses_count = static_cast<uint32_t>(current_path.poses.size());
+  }
+
+  bt_action_server_->publishFeedback(feedback);
 }
 
 void

@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/time.hpp"
 #include "nav2_core/behavior_tree_navigator.hpp"
 #include "nav2_operations_msgs/action/navigate_with_operations.hpp"
 #include "nav_msgs/msg/path.hpp"
@@ -47,6 +48,8 @@ protected:
 
   std::string path_blackboard_id_;
   bool active_goal_{false};
+  rclcpp::Time goal_start_time_;
+  rclcpp::Clock::SharedPtr clock_;
 };
 
 }  // namespace nav2_operations_navigator
